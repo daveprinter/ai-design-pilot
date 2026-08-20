@@ -20,16 +20,16 @@ export type DesignObject = {
   stroke: string;
   strokeWidth: number; // mm
   opacity: number; // 0..1
-  radius?: number; // mm, rect corner
-  text?: string;
-  fontSize?: number; // pt
-  fontFamily?: string;
-  fontWeight?: string;
-  align?: "left" | "center" | "right";
-  letterSpacing?: number;
-  src?: string; // data url for images
-  locked?: boolean;
-  hidden?: boolean;
+  radius?: number | undefined; // mm, rect corner
+  text?: string | undefined;
+  fontSize?: number | undefined; // pt
+  fontFamily?: string | undefined;
+  fontWeight?: string | undefined;
+  align?: "left" | "center" | "right" | undefined;
+  letterSpacing?: number | undefined;
+  src?: string | undefined; // data url for images
+  locked?: boolean | undefined;
+  hidden?: boolean | undefined;
 };
 
 export type Design = {
