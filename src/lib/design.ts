@@ -297,7 +297,7 @@ export function designToSvg(design: Design): string {
 export async function designToPdfBlob(design: Design, dpi = 300): Promise<Blob> {
   const canvas = await renderToCanvas(design, dpi);
   const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.92);
-  const b64 = jpegDataUrl.split(",")[1];
+  const b64 = jpegDataUrl.split(",")[1] ?? "";
   const bin = atob(b64);
   const jpegBytes = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) jpegBytes[i] = bin.charCodeAt(i);
