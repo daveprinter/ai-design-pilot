@@ -45,6 +45,18 @@ const QUICK_ACTIONS = [
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
+/** Detects "make me a…" style requests that should trigger real image generation. */
+export function isImageRequest(text: string) {
+  const t = text.toLowerCase();
+  if (/\b(don'?t|no|without)\s+(generate|create|draw)\b/.test(t)) return false;
+  const verb = /\b(generate|create|make|design|draw|render|produce|give me|sketch|mock ?up|visuali[sz]e)\b/.test(t);
+  const noun =
+    /\b(image|picture|photo|artwork|art|logo|poster|flyer|banner|billboard|mockup|illustration|graphic|design|wrap|sticker|label|background|icon|t-?shirt|signboard|business card)\b/.test(
+      t,
+    );
+  return verb && noun;
+}
+
 export function AiTab() {
   const { design, setDesign, checkpoint, undo, canUndo, log, prefs, brand } = useStudio();
   const [messages, setMessages] = usePersistentState<ChatMessage[]>("chat", []);
