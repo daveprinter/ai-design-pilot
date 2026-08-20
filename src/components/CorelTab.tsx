@@ -1,12 +1,21 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Link2, Loader2, PlugZap, XCircle } from "lucide-react";
+import { Activity, CheckCircle2, Download, Link2, Loader2, PlugZap, Rocket, ShieldCheck, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useStudio } from "@/lib/studio";
 import { detectCorel, sendToCorel } from "@/lib/corel";
+import {
+  checkProcesses,
+  downloadBridgeInstaller,
+  launchApp,
+  type BridgePermissions,
+  type ProcessInfo,
+} from "@/lib/bridge";
 import { EXPORT_FORMATS, type ExportFormat } from "@/lib/design";
+
+const DEFAULT_PERMS: BridgePermissions = { launchApps: false, processCheck: false, fileAccess: false };
 
 const WORKFLOWS = [
   {
