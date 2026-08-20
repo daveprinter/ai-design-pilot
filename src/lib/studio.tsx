@@ -63,6 +63,8 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     importFormat: "svg",
     openNewDocument: true,
     bridgeUrl: "http://localhost:7317",
+    permissions: { launchApps: false, processCheck: false, fileAccess: false },
+    watchedApps: ["CorelDRW.exe", "Photoshop.exe", "Illustrator.exe"],
   });
   const [prefs, setPrefs] = usePersistentState<Prefs>("prefs", {
     dpi: 300,
