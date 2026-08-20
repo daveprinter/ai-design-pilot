@@ -44,6 +44,13 @@ const WORKFLOWS = [
 export function CorelTab() {
   const { corel, setCorel, design, prefs, setPrefs, activity, log } = useStudio();
   const [checking, setChecking] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [processes, setProcesses] = useState<ProcessInfo[]>([]);
+  const perms: BridgePermissions = corel.permissions ?? DEFAULT_PERMS;
+  const watched = corel.watchedApps ?? ["CorelDRW.exe"];
+
+  const setPerm = (key: keyof BridgePermissions, value: boolean) =>
+    setCorel((c) => ({ ...c, permissions: { ...(c.permissions ?? DEFAULT_PERMS), [key]: value } }));
 
   const check = async () => {
     setChecking(true);
@@ -54,9 +61,106 @@ export function CorelTab() {
     setChecking(false);
   };
 
+  const scan = async () => {
+    if (!perms.processCheck) {
+      toast.warning("Process checking is off", { description: "Enable the permission below first." });
+      return;
+    }
+    setScanning(true);
+    const res = await checkProcesses(corel.bridgeUrl, watched);
+    setProcesses(res.processes);
+    log(`Process check — ${res.message}`, "corel");
+    toast[res.ok ? "success" : "warning"]("Process check", { description: res.message });
+    setScanning(false);
+  };
+
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
       <section className="space-y-4">
+        <div className="panel p-4">
+          <h3 className="mb-3 flex items-center gap-2 font-display text-sm font-bold">
+            <Download className="h-4 w-4 text-primary" /> Install Pilot Bridge
+          </h3>
+          <p className="mb-3 text-[11px] text-muted-foreground">
+            The bridge is a tiny helper that runs on the design computer. It lets Pilot detect CorelDRAW, check which
+            apps are running, open desktop applications and push artwork straight into CorelDRAW X7. Choose the
+            permissions you want to grant — they are baked into the installer you download.
+          </p>
+
+          <div className="space-y-2">
+            <Row
+              label="Open apps on this computer"
+              hint="Pilot may launch CorelDRAW X7 and other desktop apps through the bridge."
+              checked={perms.launchApps}
+              onChange={(v) => setPerm("launchApps", v)}
+            />
+            <Row
+              label="Process checking"
+              hint="Pilot may see whether CorelDRAW, Photoshop or Illustrator are currently running."
+              checked={perms.processCheck}
+              onChange={(v) => setPerm("processCheck", v)}
+            />
+            <Row
+              label="File access for imports"
+              hint="Artwork is written to a PilotBridge folder in your home directory before import."
+              checked={perms.fileAccess}
+              onChange={(v) => setPerm("fileAccess", v)}
+            />
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              onClick={() => {
+                downloadBridgeInstaller(corel.bridgeUrl, perms);
+                log("Downloaded Pilot Bridge installer", "corel");
+                toast.success("Installer downloaded", {
+                  description: "Run install-pilot-bridge.bat next to pilot-bridge.js (Node 18+).",
+                });
+              }}
+            >
+              <Download className="mr-1 h-3.5 w-3.5" /> Download bridge installer
+            </Button>
+            <Button size="sm" variant="secondary" disabled={scanning} onClick={scan}>
+              {scanning ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <Activity className="mr-1 h-3.5 w-3.5" />}
+              Check running apps
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                const res = await launchApp(corel.bridgeUrl, "CorelDRAW", perms);
+                log(res.message, "corel");
+                toast[res.ok ? "success" : "warning"]("Open CorelDRAW", { description: res.message });
+              }}
+            >
+              <Rocket className="mr-1 h-3.5 w-3.5" /> Open CorelDRAW
+            </Button>
+            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5 text-success" />
+              {Object.values(perms).filter(Boolean).length}/3 permissions granted
+            </span>
+          </div>
+
+          {processes.length > 0 && (
+            <ul className="mt-3 grid gap-1 sm:grid-cols-3">
+              {processes.map((p) => (
+                <li
+                  key={p.name}
+                  className="flex items-center gap-2 rounded-md border border-border bg-surface-2/50 px-2 py-1 text-[11px]"
+                >
+                  {p.running ? (
+                    <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                  ) : (
+                    <XCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  )}
+                  {p.name}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         <div className="panel p-4">
           <h3 className="mb-3 flex items-center gap-2 font-display text-sm font-bold">
             <Link2 className="h-4 w-4 text-primary" /> Link to CorelDRAW X7
