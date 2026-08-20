@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { usePersistentState } from "./storage";
 import { DEFAULT_BRAND, TEMPLATES, templateToDesign, type BrandInput } from "./templates";
 import type { Design, ExportFormat } from "./design";
+import type { BridgePermissions } from "./bridge";
 
 export type CorelSettings = {
   linked: boolean;
@@ -11,6 +12,8 @@ export type CorelSettings = {
   importFormat: ExportFormat;
   openNewDocument: boolean;
   bridgeUrl: string;
+  permissions: BridgePermissions;
+  watchedApps: string[];
 };
 
 export type Prefs = {
